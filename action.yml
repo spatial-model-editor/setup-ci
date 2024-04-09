@@ -1,0 +1,36 @@
+name: 'setup-ci'
+description: 'Sets up a toolchain on CI for building spatial-model-editor'
+inputs:
+  extra-deps:
+    description: 'Additional dependencies to install'
+    required: false
+    default: ''
+runs:
+  using: "composite"
+  steps:
+    - name: Linux CI setup
+      if: runner.os == 'Linux'
+      run: |
+        # set environment variables
+        echo "INSTALL_PREFIX=/opt/smelibs" >> $GITHUB_ENV
+        echo "SUDO_CMD=sudo" >> $GITHUB_ENV
+        echo "TARGET_TRIPLE=x86_64-unknown-linux-gnu" >> $GITHUB_ENV
+        echo "PYTHON_EXE=/usr/bin/python3" >> $GITHUB_ENV
+        echo "OS=linux" >> $GITHUB_ENV
+        echo "CC=clang" >> $GITHUB_ENV
+        echo "CXX=clang++" >> $GITHUB_ENV
+
+        # add llvm repo for clang
+        sudo wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+        sudo add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-18 main"
+        sudo apt update -yy
+
+        # install clang and any extra dependencies
+        sudo apt install -yy clang-18 ${{ inputs.extra-deps }}
+
+        # set default clang version
+        sudo update-alternatives --remove-all clang || echo "nothing to remove"
+        sudo update-alternatives --remove-all clang++ || echo "nothing to remove"
+        sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100
+        sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
+        echo clang++ --version
