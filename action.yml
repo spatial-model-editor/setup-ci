@@ -8,8 +8,9 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Linux CI setup
-      if: runner.os == 'Linux'
+    - if: runner.os == 'Linux'
+      name: Linux CI setup
+      shell: bash
       run: |
         # set environment variables
         echo "INSTALL_PREFIX=/opt/smelibs" >> $GITHUB_ENV
