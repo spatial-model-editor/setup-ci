@@ -26,8 +26,8 @@ runs:
         sudo add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-18 main"
         sudo apt update -yy
 
-        # install clang and any extra dependencies
-        sudo apt install -yy clang-18 ${{ inputs.extra-deps }}
+        # install clang, ninja and any extra dependencies
+        sudo apt install -yy clang-18 ninja-build ${{ inputs.extra-deps }}
 
         # set default clang version
         sudo update-alternatives --remove-all clang || echo "nothing to remove"
@@ -46,6 +46,10 @@ runs:
         echo "PYTHON_EXE=/usr/bin/python3" >> $GITHUB_ENV
         echo "OS=osx" >> $GITHUB_ENV
         echo "MACOSX_DEPLOYMENT_TARGET=11" >> $GITHUB_ENV
+
+        # install ninja and any extra dependencies
+        brew install ninja ${{ inputs.extra-deps }}
+
     - if: runner.os == 'macOS'
       uses: maxim-lobanov/setup-xcode@v1
       with:
@@ -65,4 +69,4 @@ runs:
       with:
         msystem: UCRT64
         update: true
-        install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python make ${{ inputs.extra-deps }}
+        install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-ninja make ${{ inputs.extra-deps }}
