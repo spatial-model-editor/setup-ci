@@ -49,7 +49,6 @@ runs:
 
         # install ninja and any extra dependencies
         brew install ninja ${{ inputs.extra-deps }}
-
     - if: runner.os == 'macOS'
       uses: maxim-lobanov/setup-xcode@v1
       with:
