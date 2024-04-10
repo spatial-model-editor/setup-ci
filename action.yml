@@ -16,6 +16,8 @@ runs:
         echo "INSTALL_PREFIX=/opt/smelibs" >> $GITHUB_ENV
         echo "SUDO_CMD=sudo" >> $GITHUB_ENV
         echo "TARGET_TRIPLE=x86_64-unknown-linux-gnu" >> $GITHUB_ENV
+        echo "HOST_TRIPLE=x86_64-unknown-linux-gnu" >> $GITHUB_ENV
+
         echo "PYTHON_EXE=/usr/bin/python3" >> $GITHUB_ENV
         echo "OS=linux" >> $GITHUB_ENV
         echo "CC=clang" >> $GITHUB_ENV
@@ -43,12 +45,15 @@ runs:
         echo "INSTALL_PREFIX=/opt/smelibs" >> $GITHUB_ENV
         echo "SUDO_CMD=sudo" >> $GITHUB_ENV
         echo "TARGET_TRIPLE=x86_64-apple-darwin16" >> $GITHUB_ENV
+        echo "HOST_TRIPLE=x86_64-apple-darwin16" >> $GITHUB_ENV
         echo "PYTHON_EXE=/usr/bin/python3" >> $GITHUB_ENV
         echo "OS=osx" >> $GITHUB_ENV
         echo "MACOSX_DEPLOYMENT_TARGET=11" >> $GITHUB_ENV
 
-        # install ninja and any extra dependencies
+        # install ninja, bison, flex and any extra dependencies
         brew install ninja ${{ inputs.extra-deps }}
+        echo "/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH" >> $GITHUB_PATH
+
     - if: runner.os == 'macOS'
       uses: maxim-lobanov/setup-xcode@v1
       with:
@@ -61,6 +66,7 @@ runs:
         echo "INSTALL_PREFIX=/c/smelibs" >> $GITHUB_ENV
         echo "SUDO_CMD=" >> $GITHUB_ENV
         echo "TARGET_TRIPLE=x86_64-w64-windows-gnu" >> $GITHUB_ENV
+        echo "HOST_TRIPLE=x86_64-w64-mingw64" >> $GITHUB_ENV
         echo "PYTHON_EXE=/ucrt64/bin/python" >> $GITHUB_ENV
         echo "OS=win64-mingw" >> $GITHUB_ENV
     - if: runner.os == 'Windows'
@@ -68,4 +74,4 @@ runs:
       with:
         msystem: UCRT64
         update: true
-        install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-ninja make git ${{ inputs.extra-deps }}
+        install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-ninja make m4 git diffutils flex bison ${{ inputs.extra-deps }}

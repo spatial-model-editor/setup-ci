@@ -2,14 +2,14 @@
 
 An action to set up the toolchain on CI used for building spatial-model-editor and its dependencies.
 
-- linux
+- ubuntu-20.04
   - clang 18
   - ninja
-- macos
+- macos-13
   - xcode 14.3
   - MACOSX_DEPLOYMENT_TARGET=11
   - ninja
-- windows
+- windows-2022
   - msys2 mingw gcc (latest version, currently 13)
   - msys2 mingw ninja
 
