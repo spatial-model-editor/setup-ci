@@ -51,7 +51,7 @@ runs:
         echo "MACOSX_DEPLOYMENT_TARGET=11" >> $GITHUB_ENV
 
         # install ninja, bison, flex and any extra dependencies
-        brew install ninja ${{ inputs.extra-deps }}
+        brew install ninja bison flex ${{ inputs.extra-deps }}
         echo "/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH" > $GITHUB_PATH
 
     - if: runner.os == 'macOS'
