@@ -52,7 +52,7 @@ runs:
 
         # install ninja, bison, flex and any extra dependencies
         brew install ninja ${{ inputs.extra-deps }}
-        echo "/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH" >> $GITHUB_PATH
+        echo "/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH" > $GITHUB_PATH
 
     - if: runner.os == 'macOS'
       uses: maxim-lobanov/setup-xcode@v1
