@@ -26,8 +26,8 @@ runs:
         sudo add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-18 main"
         sudo apt update -yy
 
-        # install clang, ninja and any extra dependencies
-        sudo apt install -yy clang-18 ninja-build ${{ inputs.extra-deps }}
+        # install clang, ninja, qt build deps, and any extra dependencies
+        sudo apt install -yy clang-18 ninja-build libglu1-mesa-dev libx11-dev libx11-xcb-dev libxext-dev libxfixes-dev libxi-dev libxrender-dev libxcb1-dev libxcb-glx0-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-render-util0-dev libxkbcommon-dev libxkbcommon-x11-dev '^libxcb.*-dev' ${{ inputs.extra-deps }}
 
         # set default clang version
         sudo update-alternatives --remove-all clang || echo "nothing to remove"
