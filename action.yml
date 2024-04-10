@@ -36,7 +36,11 @@ runs:
         sudo update-alternatives --remove-all clang++ || echo "nothing to remove"
         sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100
         sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
-        echo clang++ --version
+        clang++ --version
+
+        # disable system blas/lapack
+        sudo rm /usr/lib/x86_64-linux-gnu/libblas*
+        sudo rm /usr/lib/x86_64-linux-gnu/liblapack*
 
     - if: runner.os == 'macOS'
       shell: bash
@@ -74,4 +78,4 @@ runs:
       with:
         msystem: UCRT64
         update: true
-        install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-ninja make m4 git diffutils flex bison ${{ inputs.extra-deps }}
+        install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-git-lfs make m4 git dos2unix diffutils flex bison ${{ inputs.extra-deps }}
