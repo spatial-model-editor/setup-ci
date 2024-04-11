@@ -79,3 +79,17 @@ runs:
         msystem: UCRT64
         update: true
         install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-git-lfs make m4 git dos2unix diffutils flex bison ${{ inputs.extra-deps }}
+
+    # temporary cmake < 3.29 pin due to dune cmake issue
+    - if: runner.os != 'Windows'
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: "3.28.x"
+    - if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: |
+        pacman -Rcns --noconfirm mingw-w64-ucrt-x86_64-ccmake
+        wget https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-ccmake-3.28.3-2-any.pkg.tar.zst
+        pacman -U --noconfirm --overwrite \* mingw-w64-ucrt-x86_64-ccmake-3.28.3-2-any.pkg.tar.zst
+    - shell: bash
+      run: cmake --version
