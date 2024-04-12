@@ -58,6 +58,12 @@ runs:
         ccache --cleanup
         ccache --zero-stats
         ccache --show-stats
+    - if: runner.os == 'Linux'
+      uses: actions/cache@v4
+      with:
+        path: '~/.cache/ccache'
+        key: ccache-${{ github.job }}-${{ runner.os }}-${{ github.sha }}
+        restore-keys: ccache-${{ github.job }}-${{ runner.os }}-
 
     - if: runner.os == 'macOS'
       shell: bash
@@ -83,7 +89,13 @@ runs:
     - if: runner.os == 'macOS'
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: "14.3"
+        xcode-version: '14.3'
+    - if: runner.os == 'macOS'
+      uses: actions/cache@v4
+      with:
+        path: '/Users/runner/Library/Caches/ccache'
+        key: ccache-${{ github.job }}-${{ runner.os }}-${{ github.sha }}
+        restore-keys: ccache-${{ github.job }}-${{ runner.os }}-
 
     - if: runner.os == 'Windows'
       shell: bash
@@ -109,6 +121,12 @@ runs:
         ccache --cleanup
         ccache --zero-stats
         ccache --show-stats
+    - if: runner.os == 'Windows'
+      uses: actions/cache@v4
+      with:
+        path: 'C:\Users\runneradmin\AppData\Local\ccache'
+        key: ccache-${{ github.job }}-${{ runner.os }}-${{ github.sha }}
+        restore-keys: ccache-${{ github.job }}-${{ runner.os }}-
 
     - if: runner.os != 'Windows'
       uses: actions/setup-python@v5
