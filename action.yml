@@ -37,8 +37,10 @@ runs:
         # set default clang version
         sudo update-alternatives --remove-all clang || echo "nothing to remove"
         sudo update-alternatives --remove-all clang++ || echo "nothing to remove"
+        sudo update-alternatives --remove-all llvm-cov || echo "nothing to remove"
         sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${CLANG_VERSION} 100
         sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-${CLANG_VERSION} 100
+        sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-${CLANG_VERSION} 100
         clang++ --version
 
         # disable system blas/lapack
