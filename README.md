@@ -2,22 +2,22 @@
 
 An action to set up the toolchain on CI used for building spatial-model-editor and its dependencies.
 
-- ubuntu-20.04 (X64)
+- `OS=linux`
+  - ubuntu-20.04 (X64)
   - clang 18
-  - ninja
-- macos-13 (X64)
+- `OS=osx`
+  - macos-13 (X64)
   - xcode 14.3
-  - MACOSX_DEPLOYMENT_TARGET=11
-  - ninja
-- macos-14 (ARM64)
-  - xcode 14.3
-  - MACOSX_DEPLOYMENT_TARGET=11
-  - ninja
-- windows-2022 (X64)
-  - msys2 mingw gcc (latest version, currently 13)
-  - msys2 mingw ninja
+  - `MACOSX_DEPLOYMENT_TARGET=11`
+- `OS=osx-arm64`
+  - macos-14 (ARM64)
+  - xcode 15.3
+  - `MACOSX_DEPLOYMENT_TARGET=11`
+- `OS=win64-mingw`
+  - windows-2022 (X64)
+  - msys2 mingw gcc (latest version, 13 at time of writing)
 
-To use the latest version:
+To use the latest version of this action:
 
 ```yaml
       - uses: spatial-model-editor/setup-ci@latest
