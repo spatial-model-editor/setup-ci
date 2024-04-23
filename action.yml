@@ -73,10 +73,7 @@ runs:
         # set environment variables
         echo "INSTALL_PREFIX=/opt/smelibs" >> $GITHUB_ENV
         echo "SUDO_CMD=sudo" >> $GITHUB_ENV
-        echo "TARGET_TRIPLE=x86_64-apple-darwin16" >> $GITHUB_ENV
-        echo "HOST_TRIPLE=x86_64-apple-darwin16" >> $GITHUB_ENV
         echo "PYTHON_EXE=/usr/bin/python3" >> $GITHUB_ENV
-        echo "OS=osx" >> $GITHUB_ENV
         echo "MACOSX_DEPLOYMENT_TARGET=11" >> $GITHUB_ENV
 
         # install required tools and any extra dependencies
@@ -88,10 +85,28 @@ runs:
         ccache --cleanup
         ccache --zero-stats
         ccache --show-stats
-    - if: runner.os == 'macOS'
+    - if: (runner.os == 'macOS') && (runner.arch == 'X64')
+      shell: bash
+      run: |
+        # set X64 environment variables
+        echo "TARGET_TRIPLE=x86_64-apple-darwin16" >> $GITHUB_ENV
+        echo "HOST_TRIPLE=x86_64-apple-darwin16" >> $GITHUB_ENV
+        echo "OS=osx" >> $GITHUB_ENV
+    - if: (runner.os == 'macOS') && (runner.arch == 'ARM64')
+      shell: bash
+      run: |
+        # set ARM64 environment variables
+        echo "TARGET_TRIPLE=aarch64-apple-darwin20.1.0" >> $GITHUB_ENV
+        echo "HOST_TRIPLE=aarch64-apple-darwin20.1.0" >> $GITHUB_ENV
+        echo "OS=osx-arm64" >> $GITHUB_ENV
+    - if: (runner.os == 'macOS') && (runner.arch == 'X64')
       uses: maxim-lobanov/setup-xcode@v1
       with:
         xcode-version: '14.3'
+    - if: (runner.os == 'macOS') && (runner.arch == 'ARM64')
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '15.3'
     - if: runner.os == 'macOS'
       uses: actions/cache@v4
       with:
