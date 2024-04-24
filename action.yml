@@ -78,7 +78,8 @@ runs:
 
         # install required tools and any extra dependencies
         brew install ninja bison flex ccache ${{ inputs.extra-deps }}
-        echo "/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH" > $GITHUB_PATH
+        # brew install location differs between macos-13 and macos-14 runners - just put both possiblities in PATH
+        echo "/opt/homebrew/opt/flex/bin:/opt/homebrew/opt/bison/bin:/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH" > $GITHUB_PATH
 
         # set maximum ccache size to 400MB
         ccache --max-size 400M
