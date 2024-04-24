@@ -64,8 +64,8 @@ runs:
       uses: actions/cache@v4
       with:
         path: '~/.cache/ccache'
-        key: ccache-${{ github.job }}-${{ runner.os }}-${{ github.sha }}
-        restore-keys: ccache-${{ github.job }}-${{ runner.os }}-
+        key: ccache-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
+        restore-keys: ccache-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-
 
     - if: runner.os == 'macOS'
       shell: bash
@@ -112,8 +112,8 @@ runs:
       uses: actions/cache@v4
       with:
         path: '/Users/runner/Library/Caches/ccache'
-        key: ccache-${{ github.job }}-${{ runner.os }}-${{ github.sha }}
-        restore-keys: ccache-${{ github.job }}-${{ runner.os }}-
+        key: ccache-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
+        restore-keys: ccache-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-
 
     - if: runner.os == 'Windows'
       shell: bash
@@ -143,8 +143,8 @@ runs:
       uses: actions/cache@v4
       with:
         path: 'C:\Users\runneradmin\AppData\Local\ccache'
-        key: ccache-${{ github.job }}-${{ runner.os }}-${{ github.sha }}
-        restore-keys: ccache-${{ github.job }}-${{ runner.os }}-
+        key: ccache-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
+        restore-keys: ccache-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-
     - if: runner.os == 'Windows'
       name: Install Mesa 3D to get OpenGL support on Windows without a GPU
       uses: ssciwr/setup-mesa-dist-win@v2
