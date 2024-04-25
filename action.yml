@@ -130,7 +130,7 @@ runs:
       with:
         msystem: UCRT64
         update: true
-        install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-git-lfs mingw-w64-ucrt-x86_64-ccache make m4 git dos2unix diffutils flex bison ${{ inputs.extra-deps }}
+        install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-pip mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-git-lfs mingw-w64-ucrt-x86_64-ccache make m4 git dos2unix diffutils flex bison ${{ inputs.extra-deps }}
     - if: runner.os == 'Windows'
       shell: msys2 {0}
       run: |
@@ -155,9 +155,3 @@ runs:
       uses: actions/setup-python@v5
       with:
         python-version: "3.12"
-
-    # temporary install of cmake 3.29.2 due to dune cmake issue with 3.29.1 (msys already has 3.29.2)
-    - if: runner.os != 'Windows'
-      uses: jwlawson/actions-setup-cmake@v2
-      with:
-        cmake-version: "3.29.2"
