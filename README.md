@@ -29,6 +29,14 @@ To use a specific tag:
       - uses: spatial-model-editor/setup-ci@2024.01.01
 ```
 
+To also download pre-compiled dependencies, set the version tag or "latest":
+
+```yaml
+      - uses: spatial-model-editor/setup-ci@2024.01.01
+        with:
+          sme_deps_common: 2024.01.05
+```
+
 ## Making a new release
 
 To make a new release of this action, the commit should be tagged with a new tag of the date in form `YYYY.MM.DD`.

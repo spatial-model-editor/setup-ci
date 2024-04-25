@@ -1,10 +1,22 @@
 name: 'setup-ci'
 description: 'Sets up a toolchain on CI for building spatial-model-editor'
 inputs:
-  extra-deps:
-    description: 'Additional dependencies to install'
+  sme_deps:
+    description: 'Set to a version or latest to download sme_deps'
     required: false
-    default: ''
+    default: 'skip'
+  sme_deps_common:
+    description: 'Set to a version or latest to download sme_deps_common'
+    required: false
+    default: 'skip'
+  sme_deps_qt:
+    description: 'Set to a version or latest to download sme_deps_qt'
+    required: false
+    default: 'skip'
+  sme_deps_llvm:
+    description: 'Set to a version or latest to download sme_deps_llvm'
+    required: false
+    default: 'skip'
 runs:
   using: "composite"
   steps:
@@ -155,3 +167,13 @@ runs:
       uses: actions/setup-python@v5
       with:
         python-version: "3.12"
+
+    - if: runner.os != 'Windows'
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: ./get-libs.sh ${{ inputs.sme_deps }} ${{ inputs.sme_deps_common }} ${{ inputs.sme_deps_qt }} ${{ inputs.sme_deps_llvm }}
+
+    - if: runner.os == 'Windows'
+      shell: msys2 {0}
+      working-directory: ${{ github.action_path }}
+      run: ./get-libs.sh ${{ inputs.sme_deps }} ${{ inputs.sme_deps_common }} ${{ inputs.sme_deps_qt }} ${{ inputs.sme_deps_llvm }}
