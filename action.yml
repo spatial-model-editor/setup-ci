@@ -20,7 +20,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-
     - if: runner.os == 'Linux'
       shell: bash
       env:
@@ -78,7 +77,6 @@ runs:
         path: '~/.cache/ccache'
         key: ccache-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
         restore-keys: ccache-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-
-
     - if: runner.os == 'macOS'
       shell: bash
       run: |
@@ -126,7 +124,6 @@ runs:
         path: '/Users/runner/Library/Caches/ccache'
         key: ccache-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
         restore-keys: ccache-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-
-
     - if: runner.os == 'Windows'
       shell: bash
       run: |
@@ -162,17 +159,14 @@ runs:
       uses: ssciwr/setup-mesa-dist-win@v2
       with:
         version: "24.0.5"
-
     - if: runner.os != 'Windows'
       uses: actions/setup-python@v5
       with:
         python-version: "3.12"
-
     - if: runner.os != 'Windows'
       shell: bash
       working-directory: ${{ github.action_path }}
       run: ./get-libs.sh ${{ inputs.sme_deps }} ${{ inputs.sme_deps_common }} ${{ inputs.sme_deps_qt }} ${{ inputs.sme_deps_llvm }}
-
     - if: runner.os == 'Windows'
       shell: msys2 {0}
       working-directory: ${{ github.action_path }}

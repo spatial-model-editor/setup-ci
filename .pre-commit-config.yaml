@@ -1,15 +1,26 @@
 repos:
-
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.6.0
-  hooks:
-  - id: end-of-file-fixer      # Ensure existence of newline characters at file ends
-  - id: check-yaml      # Make sure that contained YAML files are well-formed
-  - id: trailing-whitespace      # Trim trailing whitespace of all sorts
-  - id: check-added-large-files      # Apply a file size limit of 500kB
-  - id: mixed-line-ending      # Ensure consistent line endings
-
-- repo: https://github.com/python-jsonschema/check-jsonschema
-  rev: 0.28.2
-  hooks:
-    - id: check-github-actions
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: end-of-file-fixer
+        exclude: '.*\.diff$'
+      - id: check-yaml
+      - id: trailing-whitespace
+        exclude: '.*\.diff$'
+      - id: check-added-large-files
+      - id: mixed-line-ending
+        exclude: '.*\.diff$'
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.28.2
+    hooks:
+      - id: check-github-actions
+  - repo: https://github.com/pecigonzalo/pre-commit-shfmt
+    rev: v2.2.0
+    hooks:
+      - id: shell-fmt-go
+  - repo: https://github.com/google/yamlfmt
+    rev: v0.11.0
+    hooks:
+      - id: yamlfmt
+ci:
+  autoupdate_schedule: quarterly
