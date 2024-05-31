@@ -15,7 +15,7 @@ An action to set up the toolchain on CI used for building spatial-model-editor a
   - `MACOSX_DEPLOYMENT_TARGET=11`
 - `OS=win64-mingw`
   - windows-2022 (X64)
-  - msys2 mingw gcc (latest version, 13 at time of writing)
+  - msys2 mingw gcc (latest version, 14 at time of writing)
 
 To use the latest version of this action:
 
@@ -37,7 +37,7 @@ To also download pre-compiled dependencies, set the version tag or "latest":
           sme_deps_common: 2024.01.05
 ```
 
-If multiple jobs have the same id (e.g. when using matrix strategy) then an optional `cache_id` can be supplied to avoid cache already exists errors:
+If multiple jobs have the same id (e.g. when using matrix strategy) then an optional `cache_id` can be supplied to avoid "cache already exists" errors:
 
 ```yaml
       - uses: spatial-model-editor/setup-ci@2024.01.01
