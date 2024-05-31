@@ -17,13 +17,17 @@ inputs:
     description: 'Set to a version or latest to download sme_deps_llvm'
     required: false
     default: 'skip'
+  cache_id:
+    description: 'A unique id for the cache - only needed if multiple jobs have the same name'
+    required: false
+    default: ''
 runs:
   using: "composite"
   steps:
     - if: runner.os == 'Linux'
       shell: bash
       env:
-        CCACHE_VERSION: '4.9.1'
+        CCACHE_VERSION: '4.10'
         CLANG_VERSION: '18'
       run: |
         # set environment variables
@@ -75,8 +79,8 @@ runs:
       uses: actions/cache@v4
       with:
         path: '~/.cache/ccache'
-        key: ccache-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
-        restore-keys: ccache-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-
+        key: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
+        restore-keys: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-
     - if: runner.os == 'macOS'
       shell: bash
       run: |
@@ -122,8 +126,8 @@ runs:
       uses: actions/cache@v4
       with:
         path: '/Users/runner/Library/Caches/ccache'
-        key: ccache-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
-        restore-keys: ccache-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-
+        key: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
+        restore-keys: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-
     - if: runner.os == 'Windows'
       shell: bash
       run: |
@@ -152,13 +156,13 @@ runs:
       uses: actions/cache@v4
       with:
         path: 'C:\Users\runneradmin\AppData\Local\ccache'
-        key: ccache-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
-        restore-keys: ccache-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-
+        key: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
+        restore-keys: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-
     - if: runner.os == 'Windows'
       name: Install Mesa 3D to get OpenGL support on Windows without a GPU
       uses: ssciwr/setup-mesa-dist-win@v2
       with:
-        version: "24.0.5"
+        version: "24.1.0"
     - if: runner.os != 'Windows'
       uses: actions/setup-python@v5
       with:

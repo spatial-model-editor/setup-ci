@@ -37,6 +37,14 @@ To also download pre-compiled dependencies, set the version tag or "latest":
           sme_deps_common: 2024.01.05
 ```
 
+If multiple jobs have the same id (e.g. when using matrix strategy) then an optional `cache_id` can be supplied to avoid cache already exists errors:
+
+```yaml
+      - uses: spatial-model-editor/setup-ci@2024.01.01
+        with:
+          cache_id: my-unique-job-id
+```
+
 ## Making a new release
 
 To make a new release of this action, the commit should be tagged with a new tag of the date in form `YYYY.MM.DD`.
