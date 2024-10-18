@@ -27,7 +27,7 @@ runs:
     - if: runner.os == 'Linux'
       shell: bash
       env:
-        CCACHE_VERSION: '4.10'
+        CCACHE_VERSION: '4.10.2'
         CLANG_VERSION: '18'
       run: |
         # set environment variables
@@ -143,10 +143,16 @@ runs:
       with:
         msystem: UCRT64
         update: true
-        install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-pip mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-git-lfs mingw-w64-ucrt-x86_64-ccache make m4 git dos2unix diffutils flex bison ${{ inputs.extra-deps }}
+        install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-pip mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-git-lfs make m4 git dos2unix diffutils flex bison ${{ inputs.extra-deps }}
     - if: runner.os == 'Windows'
       shell: msys2 {0}
       run: |
+        # get a recent version of ccache
+        wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}-windows-x86_64.zip
+        unzip ccache-${CCACHE_VERSION}-windows-x86_64.zip
+        cp ccache-${CCACHE_VERSION}-windows-x86_64/ccache.exe /usr/bin/
+        ccache --version
+
         # set maximum ccache size to 400MB
         ccache --max-size 400M
         ccache --cleanup
