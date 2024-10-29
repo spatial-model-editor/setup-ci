@@ -24,6 +24,7 @@ inputs:
 runs:
   using: "composite"
   steps:
+    # LINUX
     - if: runner.os == 'Linux'
       shell: bash
       env:
@@ -81,6 +82,7 @@ runs:
         path: '~/.cache/ccache'
         key: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
         restore-keys: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-
+    # MACOS
     - if: runner.os == 'macOS'
       shell: bash
       run: |
@@ -128,6 +130,7 @@ runs:
         path: '/Users/runner/Library/Caches/ccache'
         key: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
         restore-keys: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-
+    # WINDOWS
     - if: runner.os == 'Windows'
       shell: bash
       run: |
@@ -145,12 +148,16 @@ runs:
         update: true
         install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-pip mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-git-lfs make m4 git dos2unix diffutils flex bison ${{ inputs.extra-deps }}
     - if: runner.os == 'Windows'
+      env:
+        CCACHE_VERSION: '4.10.2'
       shell: msys2 {0}
       run: |
         # get a recent version of ccache
         wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}-windows-x86_64.zip
         unzip ccache-${CCACHE_VERSION}-windows-x86_64.zip
         cp ccache-${CCACHE_VERSION}-windows-x86_64/ccache.exe /usr/bin/
+        rm -rf ccache-${CCACHE_VERSION}-windows-x86_64
+        rm -f ccache-${CCACHE_VERSION}-windows-x86_64.zip
         ccache --version
 
         # set maximum ccache size to 400MB
