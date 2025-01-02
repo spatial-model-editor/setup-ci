@@ -29,7 +29,7 @@ runs:
       shell: bash
       env:
         CCACHE_VERSION: '4.10.2'
-        CLANG_VERSION: '18'
+        CLANG_VERSION: '19'
       run: |
         # set environment variables
         echo "INSTALL_PREFIX=/opt/smelibs" >> $GITHUB_ENV
@@ -44,7 +44,7 @@ runs:
 
         # add llvm repo for clang
         sudo wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-        sudo add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-${CLANG_VERSION} main"
+        sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-${CLANG_VERSION} main"
         sudo apt update -yy
 
         # install clang, ninja, qt build deps, and any extra dependencies
@@ -90,7 +90,7 @@ runs:
         echo "INSTALL_PREFIX=/opt/smelibs" >> $GITHUB_ENV
         echo "SUDO_CMD=sudo" >> $GITHUB_ENV
         echo "PYTHON_EXE=/usr/bin/python3" >> $GITHUB_ENV
-        echo "MACOSX_DEPLOYMENT_TARGET=11" >> $GITHUB_ENV
+        echo "MACOSX_DEPLOYMENT_TARGET=12" >> $GITHUB_ENV
 
         # install required tools and any extra dependencies
         brew install ninja bison flex ccache ${{ inputs.extra-deps }}
@@ -119,11 +119,11 @@ runs:
     - if: (runner.os == 'macOS') && (runner.arch == 'X64')
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '14.3'
+        xcode-version: '15.2'
     - if: (runner.os == 'macOS') && (runner.arch == 'ARM64')
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '15.3'
+        xcode-version: '16.1'
     - if: runner.os == 'macOS'
       uses: actions/cache@v4
       with:
@@ -175,7 +175,7 @@ runs:
       name: Install Mesa 3D to get OpenGL support on Windows without a GPU
       uses: ssciwr/setup-mesa-dist-win@v2
       with:
-        version: "24.1.0"
+        version: "24.3.2"
     - if: runner.os != 'Windows'
       uses: actions/setup-python@v5
       with:

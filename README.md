@@ -3,16 +3,17 @@
 An action to set up the toolchain on CI used for building spatial-model-editor and its dependencies.
 
 - `OS=linux`
-  - ubuntu-20.04 (X64)
+  - ubuntu-22.04 (X64)
   - clang 18
+  - clang 19
 - `OS=osx`
   - macos-13 (X64)
-  - xcode 14.3
-  - `MACOSX_DEPLOYMENT_TARGET=11`
+  - xcode 15.2
+  - `MACOSX_DEPLOYMENT_TARGET=12`
 - `OS=osx-arm64`
   - macos-14 (ARM64)
-  - xcode 15.3
-  - `MACOSX_DEPLOYMENT_TARGET=11`
+  - xcode 16.1
+  - `MACOSX_DEPLOYMENT_TARGET=12`
 - `OS=win64-mingw`
   - windows-2022 (X64)
   - msys2 mingw gcc (latest version, 14 at time of writing)
