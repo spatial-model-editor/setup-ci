@@ -3,7 +3,7 @@
 An action to set up the toolchain on CI used for building spatial-model-editor and its dependencies.
 
 - `OS=linux`
-  - ubuntu-20.04 (X64)
+  - ubuntu-22.04 (X64)
   - clang 18
 - `OS=osx`
   - macos-13 (X64)
