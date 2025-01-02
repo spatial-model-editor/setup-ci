@@ -11,7 +11,7 @@ An action to set up the toolchain on CI used for building spatial-model-editor a
   - `MACOSX_DEPLOYMENT_TARGET=11`
 - `OS=osx-arm64`
   - macos-14 (ARM64)
-  - xcode 15.3
+  - xcode 16.1
   - `MACOSX_DEPLOYMENT_TARGET=11`
 - `OS=win64-mingw`
   - windows-2022 (X64)
