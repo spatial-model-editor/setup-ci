@@ -25,20 +25,56 @@ runs:
   using: "composite"
   steps:
     # LINUX
-    - if: runner.os == 'Linux'
+    - if: (runner.os == 'Linux') && (runner.arch == 'X64')
       shell: bash
       env:
         CCACHE_VERSION: '4.10.2'
+      run: |
+        # set X64 environment variables
+        echo "TARGET_TRIPLE=x86_64-unknown-linux-gnu" >> $GITHUB_ENV
+        echo "HOST_TRIPLE=x86_64-unknown-linux-gnu" >> $GITHUB_ENV
+        echo "OS=linux" >> $GITHUB_ENV
+
+        # get a recent version of ccache
+        wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}-linux-x86_64.tar.xz
+        tar -xf ccache-${CCACHE_VERSION}-linux-x86_64.tar.xz
+        sudo cp ccache-${CCACHE_VERSION}-linux-x86_64/ccache /usr/bin/ccache
+        rm -rf ccache-${CCACHE_VERSION}-linux-x86_64
+        rm -f ccache-${CCACHE_VERSION}-linux-x86_64.tar.xz
+        ccache --version
+    - if: (runner.os == 'Linux') && (runner.arch == 'ARM64')
+      shell: bash
+      env:
+        CCACHE_VERSION: '4.10.2'
+      run: |
+        # set ARM64 environment variables
+        echo "TARGET_TRIPLE=aarch64-unknown-linux-gnu" >> $GITHUB_ENV
+        echo "HOST_TRIPLE=aarch64-unknown-linux-gnu" >> $GITHUB_ENV
+        echo "OS=linux-arm64" >> $GITHUB_ENV
+
+        # get a recent version of ccache
+        wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}.tar.xz
+        tar -xf ccache-${CCACHE_VERSION}.tar.xz
+        cd ccache-${CCACHE_VERSION}/
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release -DHTTP_STORAGE_BACKEND=OFF -DENABLE_TESTING=OFF -DREDIS_STORAGE_BACKEND=OFF -GNinja ..
+        ninja
+        sudo ninja install
+        cd ../../
+        rm -rf ccache-${CCACHE_VERSION}
+        rm -f ccache-${CCACHE_VERSION}.tar.xz
+        ccache --version
+    - if: runner.os == 'Linux'
+      shell: bash
+      env:
         CLANG_VERSION: '19'
       run: |
         # set environment variables
         echo "INSTALL_PREFIX=/opt/smelibs" >> $GITHUB_ENV
         echo "SUDO_CMD=sudo" >> $GITHUB_ENV
-        echo "TARGET_TRIPLE=x86_64-unknown-linux-gnu" >> $GITHUB_ENV
-        echo "HOST_TRIPLE=x86_64-unknown-linux-gnu" >> $GITHUB_ENV
 
         echo "PYTHON_EXE=/usr/bin/python3" >> $GITHUB_ENV
-        echo "OS=linux" >> $GITHUB_ENV
         echo "CC=clang" >> $GITHUB_ENV
         echo "CXX=clang++" >> $GITHUB_ENV
 
@@ -59,17 +95,9 @@ runs:
         sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-${CLANG_VERSION} 100
         clang++ --version
 
-        # disable system blas/lapack
-        sudo rm /usr/lib/x86_64-linux-gnu/libblas*
-        sudo rm /usr/lib/x86_64-linux-gnu/liblapack*
-
-        # get a recent version of ccache
-        wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}-linux-x86_64.tar.xz
-        tar -xf ccache-${CCACHE_VERSION}-linux-x86_64.tar.xz
-        sudo cp ccache-${CCACHE_VERSION}-linux-x86_64/ccache /usr/bin/ccache
-        rm -rf ccache-${CCACHE_VERSION}-linux-x86_64
-        rm -f ccache-${CCACHE_VERSION}-linux-x86_64.tar.xz
-        ccache --version
+        # disable system blas/lapack if present
+        sudo rm -rf /usr/lib/*-linux-gnu/libblas*
+        sudo rm -rf /usr/lib/*-linux-gnu/liblapack*
 
         # set maximum ccache size to 400MB
         ccache --max-size 400M
