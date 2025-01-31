@@ -58,7 +58,7 @@ runs:
         cd ccache-${CCACHE_VERSION}/
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Release -DHTTP_STORAGE_BACKEND=OFF -DENABLE_TESTING=OFF -DREDIS_STORAGE_BACKEND=OFF -GNinja ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_DOCUMENTATION=OFF -DHTTP_STORAGE_BACKEND=OFF -DENABLE_TESTING=OFF -DREDIS_STORAGE_BACKEND=OFF -GNinja ..
         ninja
         sudo ninja install
         cd ../../

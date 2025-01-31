@@ -8,8 +8,10 @@
 
 set -e -x
 
-if [[ $RUNNER_OS == "Linux" ]]; then
+if [[ $RUNNER_OS == "Linux" ]] && [[ $RUNNER_ARCH == "X64" ]]; then
     OS="linux"
+elif [[ $RUNNER_OS == "Linux" ]] && [[ $RUNNER_ARCH == "ARM64" ]]; then
+    OS="linux-arm64"
 elif [[ $RUNNER_OS == "macOS" ]] && [[ $RUNNER_ARCH == "X64" ]]; then
     OS="osx"
 elif [[ $RUNNER_OS == "macOS" ]] && [[ $RUNNER_ARCH == "ARM64" ]]; then
