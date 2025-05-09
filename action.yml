@@ -222,7 +222,7 @@ runs:
         cd build
         cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_DOCUMENTATION=OFF -DHTTP_STORAGE_BACKEND=OFF -DENABLE_TESTING=OFF -DREDIS_STORAGE_BACKEND=OFF -GNinja ..
         ninja
-        sudo ninja install
+        ninja install
         cd ../../
         rm -rf ccache-${CCACHE_VERSION}
         rm -f ccache-${CCACHE_VERSION}.tar.xz
