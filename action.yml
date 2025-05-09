@@ -159,7 +159,7 @@ runs:
         key: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
         restore-keys: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-
     # WINDOWS
-    - if: runner.os == 'Windows'
+    - if: runner.os == 'Windows' && (runner.arch == 'X64')
       shell: bash
       run: |
         # set environment variables
@@ -169,13 +169,29 @@ runs:
         echo "HOST_TRIPLE=x86_64-w64-mingw64" >> $GITHUB_ENV
         echo "PYTHON_EXE=/ucrt64/bin/python" >> $GITHUB_ENV
         echo "OS=win64-mingw" >> $GITHUB_ENV
-    - if: runner.os == 'Windows'
+    - if: runner.os == 'Windows' && (runner.arch == 'ARM64')
+      shell: bash
+      run: |
+        # set environment variables
+        echo "INSTALL_PREFIX=/c/smelibs" >> $GITHUB_ENV
+        echo "SUDO_CMD=" >> $GITHUB_ENV
+        echo "TARGET_TRIPLE=aarch64-w64-windows-gnu" >> $GITHUB_ENV
+        echo "HOST_TRIPLE=aarch64-w64-mingw64" >> $GITHUB_ENV
+        echo "PYTHON_EXE=/clangarm64/bin/python" >> $GITHUB_ENV
+        echo "OS=win64-mingw" >> $GITHUB_ENV
+    - if: runner.os == 'Windows' && (runner.arch == 'X64')
       uses: msys2/setup-msys2@v2
       with:
         msystem: UCRT64
         update: true
         install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-pip mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-git-lfs make m4 git dos2unix diffutils flex bison unzip ${{ inputs.extra-deps }}
-    - if: runner.os == 'Windows'
+    - if: runner.os == 'Windows' && (runner.arch == 'ARM64')
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: CLANGARM64
+        update: true
+        install: mingw-w64-clang-aarch64-gcc mingw-w64-clang-aarch64-cmake mingw-w64-clang-aarch64-python mingw-w64-clang-aarch64-python-pip mingw-w64-clang-aarch64-ninja mingw-w64-clang-aarch64-git-lfs make m4 git dos2unix diffutils flex bison unzip ${{ inputs.extra-deps }}
+    - if: runner.os == 'Windows' && (runner.arch == 'X64')
       env:
         CCACHE_VERSION: '4.10.2'
       shell: msys2 {0}
@@ -186,6 +202,30 @@ runs:
         cp ccache-${CCACHE_VERSION}-windows-x86_64/ccache.exe /usr/bin/
         rm -rf ccache-${CCACHE_VERSION}-windows-x86_64
         rm -f ccache-${CCACHE_VERSION}-windows-x86_64.zip
+        ccache --version
+
+        # set maximum ccache size to 400MB
+        ccache --max-size 400M
+        ccache --cleanup
+        ccache --zero-stats
+        ccache --show-stats
+    - if: runner.os == 'Windows' && (runner.arch == 'ARM64')
+      env:
+        CCACHE_VERSION: '4.10.2'
+      shell: msys2 {0}
+      run: |
+        # get a recent version of ccache
+        wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}.tar.xz
+        tar -xf ccache-${CCACHE_VERSION}.tar.xz
+        cd ccache-${CCACHE_VERSION}/
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_DOCUMENTATION=OFF -DHTTP_STORAGE_BACKEND=OFF -DENABLE_TESTING=OFF -DREDIS_STORAGE_BACKEND=OFF -GNinja ..
+        ninja
+        sudo ninja install
+        cd ../../
+        rm -rf ccache-${CCACHE_VERSION}
+        rm -f ccache-${CCACHE_VERSION}.tar.xz
         ccache --version
 
         # set maximum ccache size to 400MB
