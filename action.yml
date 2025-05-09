@@ -178,7 +178,7 @@ runs:
         echo "TARGET_TRIPLE=aarch64-w64-windows-gnu" >> $GITHUB_ENV
         echo "HOST_TRIPLE=aarch64-w64-mingw64" >> $GITHUB_ENV
         echo "PYTHON_EXE=/clangarm64/bin/python" >> $GITHUB_ENV
-        echo "OS=win64-mingw" >> $GITHUB_ENV
+        echo "OS=win64-arm64" >> $GITHUB_ENV
     - if: runner.os == 'Windows' && (runner.arch == 'X64')
       uses: msys2/setup-msys2@v2
       with:
