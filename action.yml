@@ -24,47 +24,30 @@ inputs:
 runs:
   using: "composite"
   steps:
-    # LINUX
+    # GLOBAL ENV VARS
+    - shell: bash
+      env:
+        CCACHE_VERSION: '4.12.1'
+      run: echo "CCACHE_VERSION=${CCACHE_VERSION}" >> $GITHUB_ENV
+    # LINUX X86_64-specific
     - if: (runner.os == 'Linux') && (runner.arch == 'X64')
       shell: bash
-      env:
-        CCACHE_VERSION: '4.10.2'
       run: |
         # set X64 environment variables
         echo "TARGET_TRIPLE=x86_64-unknown-linux-gnu" >> $GITHUB_ENV
         echo "HOST_TRIPLE=x86_64-unknown-linux-gnu" >> $GITHUB_ENV
         echo "OS=linux" >> $GITHUB_ENV
-
-        # get a recent version of ccache
-        wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}-linux-x86_64.tar.xz
-        tar -xf ccache-${CCACHE_VERSION}-linux-x86_64.tar.xz
-        sudo cp ccache-${CCACHE_VERSION}-linux-x86_64/ccache /usr/bin/ccache
-        rm -rf ccache-${CCACHE_VERSION}-linux-x86_64
-        rm -f ccache-${CCACHE_VERSION}-linux-x86_64.tar.xz
-        ccache --version
+        echo "CCACHE_ARCH=x86_64" >> $GITHUB_ENV
+    # LINUX ARM64-specific
     - if: (runner.os == 'Linux') && (runner.arch == 'ARM64')
       shell: bash
-      env:
-        CCACHE_VERSION: '4.10.2'
       run: |
         # set ARM64 environment variables
         echo "TARGET_TRIPLE=aarch64-unknown-linux-gnu" >> $GITHUB_ENV
         echo "HOST_TRIPLE=aarch64-unknown-linux-gnu" >> $GITHUB_ENV
         echo "OS=linux-arm64" >> $GITHUB_ENV
-
-        # get a recent version of ccache
-        wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}.tar.xz
-        tar -xf ccache-${CCACHE_VERSION}.tar.xz
-        cd ccache-${CCACHE_VERSION}/
-        mkdir build
-        cd build
-        cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_DOCUMENTATION=OFF -DHTTP_STORAGE_BACKEND=OFF -DENABLE_TESTING=OFF -DREDIS_STORAGE_BACKEND=OFF -GNinja ..
-        ninja
-        sudo ninja install
-        cd ../../
-        rm -rf ccache-${CCACHE_VERSION}
-        rm -f ccache-${CCACHE_VERSION}.tar.xz
-        ccache --version
+        echo "CCACHE_ARCH=aarch64" >> $GITHUB_ENV
+    # LINUX
     - if: runner.os == 'Linux'
       shell: bash
       env:
@@ -77,6 +60,13 @@ runs:
         echo "PYTHON_EXE=/usr/bin/python3" >> $GITHUB_ENV
         echo "CC=clang" >> $GITHUB_ENV
         echo "CXX=clang++" >> $GITHUB_ENV
+
+        # install ccache
+        wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}-linux-${CCACHE_ARCH}.tar.xz
+        tar -xf ccache-${CCACHE_VERSION}-linux-${CCACHE_ARCH}.tar.xz
+        sudo cp ccache-${CCACHE_VERSION}-linux-${CCACHE_ARCH}/ccache /usr/bin/ccache
+        rm -rf ccache-${CCACHE_VERSION}-linux-${CCACHE_ARCH}
+        rm -f ccache-${CCACHE_VERSION}-linux-${CCACHE_ARCH}.tar.xz
 
         # add llvm repo for clang
         sudo wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
@@ -98,18 +88,36 @@ runs:
         # disable system blas/lapack if present
         sudo rm -rf /usr/lib/*-linux-gnu/libblas*
         sudo rm -rf /usr/lib/*-linux-gnu/liblapack*
-
-        # set maximum ccache size to 400MB
-        ccache --max-size 400M
-        ccache --cleanup
-        ccache --zero-stats
-        ccache --show-stats
     - if: runner.os == 'Linux'
       uses: actions/cache@v4
       with:
         path: '~/.cache/ccache'
         key: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
         restore-keys: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-
+    # MACOS X86_64-specific
+    - if: (runner.os == 'macOS') && (runner.arch == 'X64')
+      shell: bash
+      run: |
+        # set X64 environment variables
+        echo "TARGET_TRIPLE=x86_64-apple-darwin16" >> $GITHUB_ENV
+        echo "HOST_TRIPLE=x86_64-apple-darwin16" >> $GITHUB_ENV
+        echo "OS=osx" >> $GITHUB_ENV
+    - if: (runner.os == 'macOS') && (runner.arch == 'X64')
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '15.2'
+    # MACOS ARM64-specific
+    - if: (runner.os == 'macOS') && (runner.arch == 'ARM64')
+      shell: bash
+      run: |
+        # set ARM64 environment variables
+        echo "TARGET_TRIPLE=aarch64-apple-darwin20.1.0" >> $GITHUB_ENV
+        echo "HOST_TRIPLE=aarch64-apple-darwin20.1.0" >> $GITHUB_ENV
+        echo "OS=osx-arm64" >> $GITHUB_ENV
+    - if: (runner.os == 'macOS') && (runner.arch == 'ARM64')
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.1'
     # MACOS
     - if: runner.os == 'macOS'
       shell: bash
@@ -121,44 +129,26 @@ runs:
         echo "MACOSX_DEPLOYMENT_TARGET=12" >> $GITHUB_ENV
 
         # install required tools and any extra dependencies
-        brew install ninja bison flex ccache ${{ inputs.extra-deps }}
+        LOCAL_BIN="${HOME}/.local/smebin"
+        mkdir -p ${LOCAL_BIN}
+        brew install ninja bison flex ${{ inputs.extra-deps }}
         # brew install location differs between macos-13 and macos-14 runners - just put both possiblities in PATH
-        echo "/opt/homebrew/opt/flex/bin:/opt/homebrew/opt/bison/bin:/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH" > $GITHUB_PATH
+        # and include our LOCAL_BIN location where we will put ccache
+        echo "${LOCAL_BIN}:/opt/homebrew/opt/flex/bin:/opt/homebrew/opt/bison/bin:/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH" > $GITHUB_PATH
 
-        # set maximum ccache size to 400MB
-        ccache --max-size 400M
-        ccache --cleanup
-        ccache --zero-stats
-        ccache --show-stats
-    - if: (runner.os == 'macOS') && (runner.arch == 'X64')
-      shell: bash
-      run: |
-        # set X64 environment variables
-        echo "TARGET_TRIPLE=x86_64-apple-darwin16" >> $GITHUB_ENV
-        echo "HOST_TRIPLE=x86_64-apple-darwin16" >> $GITHUB_ENV
-        echo "OS=osx" >> $GITHUB_ENV
-    - if: (runner.os == 'macOS') && (runner.arch == 'ARM64')
-      shell: bash
-      run: |
-        # set ARM64 environment variables
-        echo "TARGET_TRIPLE=aarch64-apple-darwin20.1.0" >> $GITHUB_ENV
-        echo "HOST_TRIPLE=aarch64-apple-darwin20.1.0" >> $GITHUB_ENV
-        echo "OS=osx-arm64" >> $GITHUB_ENV
-    - if: (runner.os == 'macOS') && (runner.arch == 'X64')
-      uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: '15.2'
-    - if: (runner.os == 'macOS') && (runner.arch == 'ARM64')
-      uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: '16.1'
+        # install ccache
+        wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}-darwin.tar.gz
+        tar -xf ccache-${CCACHE_VERSION}-darwin.tar.gz
+        cp ccache-${CCACHE_VERSION}-darwin/ccache ${LOCAL_BIN}/ccache
+        rm -rf ccache-${CCACHE_VERSION}-darwin
+        rm -f ccache-${CCACHE_VERSION}-darwin.tar.gz
     - if: runner.os == 'macOS'
       uses: actions/cache@v4
       with:
         path: '/Users/runner/Library/Caches/ccache'
         key: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
         restore-keys: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-
-    # WINDOWS
+    # WINDOWS X86_64-specific
     - if: runner.os == 'Windows' && (runner.arch == 'X64')
       shell: bash
       run: |
@@ -169,6 +159,14 @@ runs:
         echo "HOST_TRIPLE=x86_64-w64-mingw64" >> $GITHUB_ENV
         echo "PYTHON_EXE=/ucrt64/bin/python" >> $GITHUB_ENV
         echo "OS=win64-mingw" >> $GITHUB_ENV
+        echo "CCACHE_ARCH=x86_64" >> $GITHUB_ENV
+    - if: runner.os == 'Windows' && (runner.arch == 'X64')
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: UCRT64
+        update: true
+        install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-pip mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-git-lfs make m4 git dos2unix diffutils flex bison unzip ${{ inputs.extra-deps }}
+    # WINDOWS ARM64-specific
     - if: runner.os == 'Windows' && (runner.arch == 'ARM64')
       shell: bash
       run: |
@@ -179,60 +177,23 @@ runs:
         echo "HOST_TRIPLE=aarch64-w64-mingw64" >> $GITHUB_ENV
         echo "PYTHON_EXE=/clangarm64/bin/python" >> $GITHUB_ENV
         echo "OS=win64-arm64" >> $GITHUB_ENV
-    - if: runner.os == 'Windows' && (runner.arch == 'X64')
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: UCRT64
-        update: true
-        install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-pip mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-git-lfs make m4 git dos2unix diffutils flex bison unzip ${{ inputs.extra-deps }}
+        echo "CCACHE_ARCH=aarch64" >> $GITHUB_ENV
     - if: runner.os == 'Windows' && (runner.arch == 'ARM64')
       uses: msys2/setup-msys2@v2
       with:
         msystem: CLANGARM64
         update: true
         install: mingw-w64-clang-aarch64-gcc mingw-w64-clang-aarch64-cmake mingw-w64-clang-aarch64-python mingw-w64-clang-aarch64-python-pip mingw-w64-clang-aarch64-ninja mingw-w64-clang-aarch64-git-lfs make m4 git dos2unix diffutils flex bison unzip ${{ inputs.extra-deps }}
-    - if: runner.os == 'Windows' && (runner.arch == 'X64')
-      env:
-        CCACHE_VERSION: '4.10.2'
+    # WINDOWS
+    - if: runner.os == 'Windows'
       shell: msys2 {0}
       run: |
-        # get a recent version of ccache
-        wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}-windows-x86_64.zip
-        unzip ccache-${CCACHE_VERSION}-windows-x86_64.zip
-        cp ccache-${CCACHE_VERSION}-windows-x86_64/ccache.exe /usr/bin/
-        rm -rf ccache-${CCACHE_VERSION}-windows-x86_64
-        rm -f ccache-${CCACHE_VERSION}-windows-x86_64.zip
-        ccache --version
-
-        # set maximum ccache size to 400MB
-        ccache --max-size 400M
-        ccache --cleanup
-        ccache --zero-stats
-        ccache --show-stats
-    - if: runner.os == 'Windows' && (runner.arch == 'ARM64')
-      env:
-        CCACHE_VERSION: '4.10.2'
-      shell: msys2 {0}
-      run: |
-        # get a recent version of ccache
-        wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}.tar.xz
-        tar -xf ccache-${CCACHE_VERSION}.tar.xz
-        cd ccache-${CCACHE_VERSION}/
-        mkdir build
-        cd build
-        cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_DOCUMENTATION=OFF -DHTTP_STORAGE_BACKEND=OFF -DENABLE_TESTING=OFF -DREDIS_STORAGE_BACKEND=OFF -GNinja ..
-        ninja
-        cp ccache.exe /usr/bin/
-        cd ../../
-        rm -rf ccache-${CCACHE_VERSION}
-        rm -f ccache-${CCACHE_VERSION}.tar.xz
-        ccache --version
-
-        # set maximum ccache size to 400MB
-        ccache --max-size 400M
-        ccache --cleanup
-        ccache --zero-stats
-        ccache --show-stats
+        # install ccache
+        wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}-windows-${CCACHE_ARCH}.zip
+        unzip ccache-${CCACHE_VERSION}-windows-${CCACHE_ARCH}.zip
+        cp ccache-${CCACHE_VERSION}-windows-${CCACHE_ARCH}/ccache.exe /usr/bin/
+        rm -rf ccache-${CCACHE_VERSION}-windows-${CCACHE_ARCH}
+        rm -f ccache-${CCACHE_VERSION}-windows-${CCACHE_ARCH}.zip
     - if: runner.os == 'Windows'
       uses: actions/cache@v4
       with:
@@ -244,10 +205,29 @@ runs:
       uses: ssciwr/setup-mesa-dist-win@v2
       with:
         version: "24.3.2"
+    # SET CCACHE MAX SIZE
+    - if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        ccache --version
+        ccache --max-size 400M
+        ccache --cleanup
+        ccache --zero-stats
+        ccache --show-stats
+    - if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: |
+        ccache --version
+        ccache --max-size 400M
+        ccache --cleanup
+        ccache --zero-stats
+        ccache --show-stats
+    # PYTHON
     - if: runner.os != 'Windows'
       uses: actions/setup-python@v5
       with:
         python-version: "3.12"
+    # GET-LIBS
     - if: runner.os != 'Windows'
       shell: bash
       working-directory: ${{ github.action_path }}
