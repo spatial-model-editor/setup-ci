@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: end-of-file-fixer
         exclude: '.*\.diff$'
@@ -11,7 +11,7 @@ repos:
       - id: mixed-line-ending
         exclude: '.*\.diff$'
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.33.2
+    rev: 0.34.0
     hooks:
       - id: check-github-actions
   - repo: https://github.com/pecigonzalo/pre-commit-shfmt
