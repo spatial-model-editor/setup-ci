@@ -131,7 +131,7 @@ runs:
         # install required tools and any extra dependencies
         LOCAL_BIN="${HOME}/.local/smebin"
         mkdir -p ${LOCAL_BIN}
-        brew install ninja bison flex ${{ inputs.extra-deps }}
+        brew install bison flex ${{ inputs.extra-deps }}
         # brew install location differs between macos-13 and macos-14 runners - just put both possiblities in PATH
         # and include our LOCAL_BIN location where we will put ccache
         echo "${LOCAL_BIN}:/opt/homebrew/opt/flex/bin:/opt/homebrew/opt/bison/bin:/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH" > $GITHUB_PATH
