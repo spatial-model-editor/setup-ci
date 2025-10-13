@@ -46,6 +46,15 @@ If multiple jobs have the same id (e.g. when using matrix strategy) then an opti
           cache_id: my-unique-job-id
 ```
 
+You can also specify an optional build tag to download specific builds of libs, currently only `_tsan` is supported
+
+```yaml
+      - uses: spatial-model-editor/setup-ci@2024.01.01
+        with:
+          sme_deps_common: 2024.01.05
+          build_tag: _tsan
+```
+
 ## Making a new release
 
 To make a new release of this action, the commit should be tagged with a new tag of the date in form `YYYY.MM.DD`.

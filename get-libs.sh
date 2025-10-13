@@ -20,6 +20,8 @@ elif [[ $RUNNER_OS == "Windows" ]]; then
     OS="win64-mingw"
 fi
 
+BUILD_TAG=$5
+
 HAVE_FILES_TO_INSTALL=false
 
 download_dep() {
@@ -34,14 +36,14 @@ download_dep() {
     fi
 
     if [[ $VERSION == "latest" ]]; then
-        URL=https://github.com/spatial-model-editor/${DEP}/releases/latest/download/${DEP}_${OS}.tgz
+        URL=https://github.com/spatial-model-editor/${DEP}/releases/latest/download/${DEP}_${OS}${BUILD_TAG}.tgz
     else
-        URL="https://github.com/spatial-model-editor/${DEP}/releases/download/${VERSION}/${DEP}_${OS}.tgz"
+        URL="https://github.com/spatial-model-editor/${DEP}/releases/download/${VERSION}/${DEP}_${OS}${BUILD_TAG}.tgz"
     fi
 
-    echo "Downloading ${VERSION} ${DEP} for ${OS}"
+    echo "Downloading ${VERSION} ${DEP}${BUILD_TAG} for ${OS}"
     wget "${URL}"
-    tar xf "${DEP}_${OS}.tgz"
+    tar xf "${DEP}_${OS}${BUILD_TAG}.tgz"
     HAVE_FILES_TO_INSTALL=true
 }
 

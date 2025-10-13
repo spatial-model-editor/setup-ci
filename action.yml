@@ -21,6 +21,10 @@ inputs:
     description: 'A unique id for the cache - only needed if multiple jobs have the same name'
     required: false
     default: ''
+  build_tag:
+    description: 'An optional build tag that gets appended to the downloaded libs file, e.g. _tsan'
+    required: false
+    default: ''
 runs:
   using: "composite"
   steps:
@@ -231,8 +235,8 @@ runs:
     - if: runner.os != 'Windows'
       shell: bash
       working-directory: ${{ github.action_path }}
-      run: ./get-libs.sh ${{ inputs.sme_deps }} ${{ inputs.sme_deps_common }} ${{ inputs.sme_deps_qt }} ${{ inputs.sme_deps_llvm }}
+      run: ./get-libs.sh ${{ inputs.sme_deps }} ${{ inputs.sme_deps_common }} ${{ inputs.sme_deps_qt }} ${{ inputs.sme_deps_llvm }} ${{ inputs.build_tag }}
     - if: runner.os == 'Windows'
       shell: msys2 {0}
       working-directory: ${{ github.action_path }}
-      run: ./get-libs.sh ${{ inputs.sme_deps }} ${{ inputs.sme_deps_common }} ${{ inputs.sme_deps_qt }} ${{ inputs.sme_deps_llvm }}
+      run: ./get-libs.sh ${{ inputs.sme_deps }} ${{ inputs.sme_deps_common }} ${{ inputs.sme_deps_qt }} ${{ inputs.sme_deps_llvm }} ${{ inputs.build_tag }}
