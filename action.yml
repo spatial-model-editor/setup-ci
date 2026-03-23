@@ -175,7 +175,7 @@ runs:
       with:
         msystem: UCRT64
         update: true
-        install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-pip mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-git-lfs make m4 git dos2unix diffutils flex bison unzip ${{ inputs.extra-deps }}
+        install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-lld mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-pip mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-git-lfs make m4 git dos2unix diffutils flex bison unzip ${{ inputs.extra-deps }}
     # WINDOWS ARM64-specific
     - if: runner.os == 'Windows' && (runner.arch == 'ARM64')
       shell: bash
@@ -193,7 +193,7 @@ runs:
       with:
         msystem: CLANGARM64
         update: true
-        install: mingw-w64-clang-aarch64-gcc mingw-w64-clang-aarch64-cmake mingw-w64-clang-aarch64-python mingw-w64-clang-aarch64-python-pip mingw-w64-clang-aarch64-ninja mingw-w64-clang-aarch64-git-lfs make m4 git dos2unix diffutils flex bison unzip ${{ inputs.extra-deps }}
+        install: mingw-w64-clang-aarch64-gcc mingw-w64-clang-aarch64-lld mingw-w64-clang-aarch64-cmake mingw-w64-clang-aarch64-python mingw-w64-clang-aarch64-python-pip mingw-w64-clang-aarch64-ninja mingw-w64-clang-aarch64-git-lfs make m4 git dos2unix diffutils flex bison unzip ${{ inputs.extra-deps }}
     # WINDOWS
     - if: runner.os == 'Windows'
       shell: msys2 {0}
