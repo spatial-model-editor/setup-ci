@@ -84,16 +84,18 @@ runs:
         sudo update-alternatives --remove-all clang || echo "nothing to remove"
         sudo update-alternatives --remove-all clang++ || echo "nothing to remove"
         sudo update-alternatives --remove-all llvm-cov || echo "nothing to remove"
+        sudo update-alternatives --remove-all llvm-objcopy || echo "nothing to remove"
         sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${CLANG_VERSION} 100
         sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-${CLANG_VERSION} 100
         sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-${CLANG_VERSION} 100
+        sudo update-alternatives --install /usr/bin/llvm-objcopy llvm-objcopy /usr/bin/llvm-objcopy-${CLANG_VERSION} 100
         clang++ --version
 
         # disable system blas/lapack if present
         sudo rm -rf /usr/lib/*-linux-gnu/libblas*
         sudo rm -rf /usr/lib/*-linux-gnu/liblapack*
     - if: runner.os == 'Linux'
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: '~/.cache/ccache'
         key: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
@@ -147,7 +149,7 @@ runs:
         rm -rf ccache-${CCACHE_VERSION}-darwin
         rm -f ccache-${CCACHE_VERSION}-darwin.tar.gz
     - if: runner.os == 'macOS'
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: '/Users/runner/Library/Caches/ccache'
         key: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
@@ -199,7 +201,7 @@ runs:
         rm -rf ccache-${CCACHE_VERSION}-windows-${CCACHE_ARCH}
         rm -f ccache-${CCACHE_VERSION}-windows-${CCACHE_ARCH}.zip
     - if: runner.os == 'Windows'
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: 'C:\Users\runneradmin\AppData\Local\ccache'
         key: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
@@ -228,7 +230,7 @@ runs:
         ccache --show-stats
     # PYTHON
     - if: runner.os != 'Windows'
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: "3.12"
     # GET-LIBS
