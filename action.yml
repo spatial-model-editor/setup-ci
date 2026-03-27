@@ -21,6 +21,10 @@ inputs:
     description: 'A unique id for the cache - only needed if multiple jobs have the same name'
     required: false
     default: ''
+  extra-deps:
+    description: 'Optional extra platform-native packages to install'
+    required: false
+    default: ''
   build_tag:
     description: 'An optional build tag that gets appended to the downloaded libs file, e.g. _tsan'
     required: false
@@ -29,10 +33,18 @@ runs:
   using: "composite"
   steps:
     # GLOBAL ENV VARS
-    - shell: bash
+    - id: global-env
+      shell: bash
       env:
         CCACHE_VERSION: '4.12.1'
-      run: echo "CCACHE_VERSION=${CCACHE_VERSION}" >> $GITHUB_ENV
+        PYTHON_VERSION: '3.12'
+        MSVC_TOOLSET: '14.44'
+      run: |
+        echo "CCACHE_VERSION=${CCACHE_VERSION}" >> $GITHUB_ENV
+        echo "PYTHON_VERSION=${PYTHON_VERSION}" >> $GITHUB_ENV
+        echo "MSVC_TOOLSET=${MSVC_TOOLSET}" >> $GITHUB_ENV
+        echo "python_version=${PYTHON_VERSION}" >> $GITHUB_OUTPUT
+        echo "msvc_toolset=${MSVC_TOOLSET}" >> $GITHUB_OUTPUT
     # LINUX X86_64-specific
     - if: (runner.os == 'Linux') && (runner.arch == 'X64')
       shell: bash
@@ -61,7 +73,7 @@ runs:
         echo "INSTALL_PREFIX=/opt/smelibs" >> $GITHUB_ENV
         echo "SUDO_CMD=sudo" >> $GITHUB_ENV
 
-        echo "PYTHON_EXE=/usr/bin/python3" >> $GITHUB_ENV
+        echo "PYTHON_EXE=python" >> $GITHUB_ENV
         echo "CC=clang" >> $GITHUB_ENV
         echo "CXX=clang++" >> $GITHUB_ENV
 
@@ -98,25 +110,22 @@ runs:
         # disable system blas/lapack if present
         sudo rm -rf /usr/lib/*-linux-gnu/libblas*
         sudo rm -rf /usr/lib/*-linux-gnu/liblapack*
-    - if: runner.os == 'Linux'
+    - if: always() && runner.os == 'Linux'
       uses: actions/cache@v5
       with:
         path: '~/.cache/ccache'
         key: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
         restore-keys: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-
-    # MACOS X86_64-specific
-    - if: (runner.os == 'macOS') && (runner.arch == 'X64')
-      shell: bash
-      run: |
-        # set X64 environment variables
-        echo "TARGET_TRIPLE=x86_64-apple-darwin16" >> $GITHUB_ENV
-        echo "HOST_TRIPLE=x86_64-apple-darwin16" >> $GITHUB_ENV
-        echo "OS=osx" >> $GITHUB_ENV
-    - if: (runner.os == 'macOS') && (runner.arch == 'X64')
+    # MACOS ARM64
+    - if: (runner.os == 'macOS') && (runner.arch == 'ARM64')
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '15.2'
-    # MACOS ARM64-specific
+        xcode-version: '16.1'
+    - if: (runner.os == 'macOS') && (runner.arch != 'ARM64')
+      shell: bash
+      run: |
+        echo "Unsupported runner: Intel macOS is no longer supported" >&2
+        exit 1
     - if: (runner.os == 'macOS') && (runner.arch == 'ARM64')
       shell: bash
       run: |
@@ -124,27 +133,16 @@ runs:
         echo "TARGET_TRIPLE=aarch64-apple-darwin20.1.0" >> $GITHUB_ENV
         echo "HOST_TRIPLE=aarch64-apple-darwin20.1.0" >> $GITHUB_ENV
         echo "OS=osx-arm64" >> $GITHUB_ENV
-    - if: (runner.os == 'macOS') && (runner.arch == 'ARM64')
-      uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: '16.1'
-    # MACOS
-    - if: runner.os == 'macOS'
-      shell: bash
-      run: |
-        # set environment variables
         echo "INSTALL_PREFIX=/opt/smelibs" >> $GITHUB_ENV
         echo "SUDO_CMD=sudo" >> $GITHUB_ENV
-        echo "PYTHON_EXE=/usr/bin/python3" >> $GITHUB_ENV
-        echo "MACOSX_DEPLOYMENT_TARGET=12" >> $GITHUB_ENV
+        echo "PYTHON_EXE=python" >> $GITHUB_ENV
+        echo "MACOSX_DEPLOYMENT_TARGET=13" >> $GITHUB_ENV
 
         # install required tools and any extra dependencies
         LOCAL_BIN="${HOME}/.local/smebin"
         mkdir -p ${LOCAL_BIN}
         brew install bison flex ${{ inputs.extra-deps }}
-        # brew install location differs between macos-13 and macos-14 runners - just put both possiblities in PATH
-        # and include our LOCAL_BIN location where we will put ccache
-        echo "${LOCAL_BIN}:/opt/homebrew/opt/flex/bin:/opt/homebrew/opt/bison/bin:/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH" > $GITHUB_PATH
+        echo "${LOCAL_BIN}:/opt/homebrew/opt/flex/bin:/opt/homebrew/opt/bison/bin:$PATH" > $GITHUB_PATH
 
         # install ccache
         wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}-darwin.tar.gz
@@ -152,7 +150,7 @@ runs:
         cp ccache-${CCACHE_VERSION}-darwin/ccache ${LOCAL_BIN}/ccache
         rm -rf ccache-${CCACHE_VERSION}-darwin
         rm -f ccache-${CCACHE_VERSION}-darwin.tar.gz
-    - if: runner.os == 'macOS'
+    - if: always() && (runner.os == 'macOS') && (runner.arch == 'ARM64')
       uses: actions/cache@v5
       with:
         path: '/Users/runner/Library/Caches/ccache'
@@ -160,51 +158,71 @@ runs:
         restore-keys: ccache-${{ github.job }}-${{ inputs.cache_id }}-${{ runner.os }}-${{ runner.arch }}-
     # WINDOWS X86_64-specific
     - if: runner.os == 'Windows' && (runner.arch == 'X64')
-      shell: bash
+      shell: pwsh
       run: |
         # set environment variables
-        echo "INSTALL_PREFIX=/c/smelibs" >> $GITHUB_ENV
-        echo "SUDO_CMD=" >> $GITHUB_ENV
-        echo "TARGET_TRIPLE=x86_64-w64-windows-gnu" >> $GITHUB_ENV
-        echo "HOST_TRIPLE=x86_64-w64-mingw64" >> $GITHUB_ENV
-        echo "PYTHON_EXE=/ucrt64/bin/python" >> $GITHUB_ENV
-        echo "OS=win64-mingw" >> $GITHUB_ENV
-        echo "CCACHE_ARCH=x86_64" >> $GITHUB_ENV
+        Add-Content -Path $env:GITHUB_ENV -Value "INSTALL_PREFIX=c:\smelibs"
+        Add-Content -Path $env:GITHUB_ENV -Value "SUDO_CMD="
+        Add-Content -Path $env:GITHUB_ENV -Value "TARGET_TRIPLE=x86_64-pc-windows-msvc"
+        Add-Content -Path $env:GITHUB_ENV -Value "HOST_TRIPLE=x86_64-pc-windows-msvc"
+        Add-Content -Path $env:GITHUB_ENV -Value "PYTHON_EXE=python"
+        Add-Content -Path $env:GITHUB_ENV -Value "OS=win64"
+        Add-Content -Path $env:GITHUB_ENV -Value "CC=cl"
+        Add-Content -Path $env:GITHUB_ENV -Value "CXX=cl"
+        Add-Content -Path $env:GITHUB_ENV -Value "CCACHE_ARCH=x86_64"
     - if: runner.os == 'Windows' && (runner.arch == 'X64')
-      uses: msys2/setup-msys2@v2
+      uses: TheMrMilchmann/setup-msvc-dev@v4
       with:
-        msystem: UCRT64
-        update: true
-        install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-lld mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-pip mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-git-lfs make m4 git dos2unix diffutils flex bison unzip ${{ inputs.extra-deps }}
+        arch: amd64
+        toolset: ${{ steps.global-env.outputs.msvc_toolset }}
     # WINDOWS ARM64-specific
     - if: runner.os == 'Windows' && (runner.arch == 'ARM64')
-      shell: bash
+      shell: pwsh
       run: |
         # set environment variables
-        echo "INSTALL_PREFIX=/c/smelibs" >> $GITHUB_ENV
-        echo "SUDO_CMD=" >> $GITHUB_ENV
-        echo "TARGET_TRIPLE=aarch64-w64-windows-gnu" >> $GITHUB_ENV
-        echo "HOST_TRIPLE=aarch64-w64-mingw64" >> $GITHUB_ENV
-        echo "PYTHON_EXE=/clangarm64/bin/python" >> $GITHUB_ENV
-        echo "OS=win64-arm64" >> $GITHUB_ENV
-        echo "CCACHE_ARCH=aarch64" >> $GITHUB_ENV
+        Add-Content -Path $env:GITHUB_ENV -Value "INSTALL_PREFIX=c:\smelibs"
+        Add-Content -Path $env:GITHUB_ENV -Value "SUDO_CMD="
+        Add-Content -Path $env:GITHUB_ENV -Value "TARGET_TRIPLE=aarch64-pc-windows-msvc"
+        Add-Content -Path $env:GITHUB_ENV -Value "HOST_TRIPLE=aarch64-pc-windows-msvc"
+        Add-Content -Path $env:GITHUB_ENV -Value "PYTHON_EXE=python"
+        Add-Content -Path $env:GITHUB_ENV -Value "OS=win64-arm64"
+        Add-Content -Path $env:GITHUB_ENV -Value "CC=cl"
+        Add-Content -Path $env:GITHUB_ENV -Value "CXX=cl"
+        Add-Content -Path $env:GITHUB_ENV -Value "CCACHE_ARCH=aarch64"
     - if: runner.os == 'Windows' && (runner.arch == 'ARM64')
-      uses: msys2/setup-msys2@v2
+      uses: TheMrMilchmann/setup-msvc-dev@v4
       with:
-        msystem: CLANGARM64
-        update: true
-        install: mingw-w64-clang-aarch64-gcc mingw-w64-clang-aarch64-lld mingw-w64-clang-aarch64-cmake mingw-w64-clang-aarch64-python mingw-w64-clang-aarch64-python-pip mingw-w64-clang-aarch64-ninja mingw-w64-clang-aarch64-git-lfs make m4 git dos2unix diffutils flex bison unzip ${{ inputs.extra-deps }}
+        arch: arm64
+        toolset: ${{ steps.global-env.outputs.msvc_toolset }}
+    - if: runner.os == 'Windows'
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ steps.global-env.outputs.python_version }}
+    - if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install cmake ninja
+        choco install --no-progress -y winflexbison3 ${{ inputs.extra-deps }}
+        git lfs install
+        cmake --version
+        ninja --version
     # WINDOWS
     - if: runner.os == 'Windows'
-      shell: msys2 {0}
+      shell: pwsh
       run: |
         # install ccache
-        wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}-windows-${CCACHE_ARCH}.zip
-        unzip ccache-${CCACHE_VERSION}-windows-${CCACHE_ARCH}.zip
-        cp ccache-${CCACHE_VERSION}-windows-${CCACHE_ARCH}/ccache.exe /usr/bin/
-        rm -rf ccache-${CCACHE_VERSION}-windows-${CCACHE_ARCH}
-        rm -f ccache-${CCACHE_VERSION}-windows-${CCACHE_ARCH}.zip
-    - if: runner.os == 'Windows'
+        $localBin = Join-Path $env:USERPROFILE ".local\smebin"
+        New-Item -ItemType Directory -Force -Path $localBin | Out-Null
+        $ccacheDir = "ccache-$env:CCACHE_VERSION-windows-$env:CCACHE_ARCH"
+        $ccacheZip = "$ccacheDir.zip"
+        Invoke-WebRequest "https://github.com/ccache/ccache/releases/download/v$env:CCACHE_VERSION/$ccacheZip" -OutFile $ccacheZip
+        Expand-Archive $ccacheZip -DestinationPath .
+        Copy-Item (Join-Path $ccacheDir "ccache.exe") $localBin
+        Add-Content -Path $env:GITHUB_PATH -Value $localBin
+        Remove-Item $ccacheDir -Recurse -Force
+        Remove-Item $ccacheZip -Force
+    - if: always() && runner.os == 'Windows'
       uses: actions/cache@v5
       with:
         path: 'C:\Users\runneradmin\AppData\Local\ccache'
@@ -225,7 +243,7 @@ runs:
         ccache --zero-stats
         ccache --show-stats
     - if: runner.os == 'Windows'
-      shell: msys2 {0}
+      shell: pwsh
       run: |
         ccache --version
         ccache --max-size 400M
@@ -236,13 +254,13 @@ runs:
     - if: runner.os != 'Windows'
       uses: actions/setup-python@v6
       with:
-        python-version: "3.12"
+        python-version: ${{ steps.global-env.outputs.python_version }}
     # GET-LIBS
     - if: runner.os != 'Windows'
       shell: bash
       working-directory: ${{ github.action_path }}
       run: ./get-libs.sh ${{ inputs.sme_deps }} ${{ inputs.sme_deps_common }} ${{ inputs.sme_deps_qt }} ${{ inputs.sme_deps_llvm }} ${{ inputs.build_tag }}
     - if: runner.os == 'Windows'
-      shell: msys2 {0}
+      shell: pwsh
       working-directory: ${{ github.action_path }}
-      run: ./get-libs.sh ${{ inputs.sme_deps }} ${{ inputs.sme_deps_common }} ${{ inputs.sme_deps_qt }} ${{ inputs.sme_deps_llvm }} ${{ inputs.build_tag }}
+      run: ./get-libs.ps1 ${{ inputs.sme_deps }} ${{ inputs.sme_deps_common }} ${{ inputs.sme_deps_qt }} ${{ inputs.sme_deps_llvm }} ${{ inputs.build_tag }}

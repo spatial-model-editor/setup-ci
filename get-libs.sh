@@ -12,12 +12,11 @@ if [[ $RUNNER_OS == "Linux" ]] && [[ $RUNNER_ARCH == "X64" ]]; then
     OS="linux"
 elif [[ $RUNNER_OS == "Linux" ]] && [[ $RUNNER_ARCH == "ARM64" ]]; then
     OS="linux-arm64"
-elif [[ $RUNNER_OS == "macOS" ]] && [[ $RUNNER_ARCH == "X64" ]]; then
-    OS="osx"
 elif [[ $RUNNER_OS == "macOS" ]] && [[ $RUNNER_ARCH == "ARM64" ]]; then
     OS="osx-arm64"
-elif [[ $RUNNER_OS == "Windows" ]]; then
-    OS="win64-mingw"
+else
+    echo "Unsupported runner combination: ${RUNNER_OS}/${RUNNER_ARCH}" >&2
+    exit 1
 fi
 
 BUILD_TAG=$5
@@ -53,10 +52,5 @@ download_dep "sme_deps_qt" "$3"
 download_dep "sme_deps_llvm" "$4"
 
 if [[ $HAVE_FILES_TO_INSTALL == true ]]; then
-    # copy libs to desired location: workaround for tar -C / not working on msys2
-    if [[ $OS == "win64-mingw" ]]; then
-        mv c/smelibs /c/
-    else
-        ${SUDO_CMD} mv opt/* /opt/
-    fi
+    ${SUDO_CMD} mv opt/* /opt/
 fi
