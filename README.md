@@ -90,6 +90,7 @@ This action exports the following environment variables for subsequent workflow 
 - `PYTHON_EXE`: `python`
 - `CC`: `clang` on Linux/macOS, `cl` on Windows
 - `CXX`: `clang++` on Linux/macOS, `cl` on Windows
+- `CMAKE_CXX_FLAGS`: `/permissive- /Zc:__cplusplus /Zc:preprocessor /bigobj /EHsc /external:anglebrackets` on Windows
 - `MACOSX_DEPLOYMENT_TARGET`: `13` on macOS ARM64 runners only
 
 ## Making a new release

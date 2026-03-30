@@ -169,6 +169,7 @@ runs:
         Add-Content -Path $env:GITHUB_ENV -Value "OS=win64"
         Add-Content -Path $env:GITHUB_ENV -Value "CC=cl"
         Add-Content -Path $env:GITHUB_ENV -Value "CXX=cl"
+        Add-Content -Path $env:GITHUB_ENV -Value "CMAKE_CXX_FLAGS=/permissive- /Zc:__cplusplus /Zc:preprocessor /bigobj /EHsc /external:anglebrackets"
         Add-Content -Path $env:GITHUB_ENV -Value "CCACHE_ARCH=x86_64"
     - if: runner.os == 'Windows' && (runner.arch == 'X64')
       uses: TheMrMilchmann/setup-msvc-dev@v4
@@ -188,6 +189,7 @@ runs:
         Add-Content -Path $env:GITHUB_ENV -Value "OS=win64-arm64"
         Add-Content -Path $env:GITHUB_ENV -Value "CC=cl"
         Add-Content -Path $env:GITHUB_ENV -Value "CXX=cl"
+        Add-Content -Path $env:GITHUB_ENV -Value "CMAKE_CXX_FLAGS=/permissive- /Zc:__cplusplus /Zc:preprocessor /bigobj /EHsc /external:anglebrackets"
         Add-Content -Path $env:GITHUB_ENV -Value "CCACHE_ARCH=aarch64"
     - if: runner.os == 'Windows' && (runner.arch == 'ARM64')
       uses: TheMrMilchmann/setup-msvc-dev@v4
