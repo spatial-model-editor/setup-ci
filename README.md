@@ -6,14 +6,14 @@ An action to set up the toolchain on CI used for building spatial-model-editor a
 
 - `OS=linux`
   - Linux (X64)
-  - clang 19
+  - clang 23
 - `OS=linux-arm64`
   - Linux (ARM64)
-  - clang 19
+  - clang 23
 - `OS=osx-arm64`
   - macOS (ARM64 only)
-  - xcode 16.1
-  - `MACOSX_DEPLOYMENT_TARGET=13`
+  - xcode 26.6
+  - `MACOSX_DEPLOYMENT_TARGET=14.4`
 - `OS=win64`
   - Windows (X64)
   - Visual Studio 2022 MSVC
@@ -78,8 +78,8 @@ You can also specify an optional build tag to download specific builds of libs, 
 
 This action exports the following environment variables for subsequent workflow steps:
 
-- `CCACHE_VERSION`: ccache version installed by the action, currently `4.12.1`
-- `PYTHON_VERSION`: Python version installed by the action, currently `3.12`
+- `CCACHE_VERSION`: ccache version installed by the action, currently `4.14.1`
+- `PYTHON_VERSION`: Python version installed by the action, currently `3.14`
 - `MSVC_TOOLSET`: Windows MSVC toolset version used by the action, currently `14.44`
 - `TARGET_TRIPLE`: target platform triple for the current runner
 - `HOST_TRIPLE`: host platform triple for the current runner
@@ -91,7 +91,7 @@ This action exports the following environment variables for subsequent workflow 
 - `CC`: `clang` on Linux/macOS, `cl` on Windows
 - `CXX`: `clang++` on Linux/macOS, `cl` on Windows
 - `CMAKE_CXX_FLAGS`: `/permissive- /Zc:__cplusplus /Zc:preprocessor /bigobj /EHsc /external:anglebrackets` on Windows
-- `MACOSX_DEPLOYMENT_TARGET`: `13` on macOS ARM64 runners only
+- `MACOSX_DEPLOYMENT_TARGET`: `14.4` on macOS ARM64 runners only
 
 ## Making a new release
 

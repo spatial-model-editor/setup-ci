@@ -36,8 +36,8 @@ runs:
     - id: global-env
       shell: bash
       env:
-        CCACHE_VERSION: '4.12.1'
-        PYTHON_VERSION: '3.12'
+        CCACHE_VERSION: '4.14.1'
+        PYTHON_VERSION: '3.14'
         MSVC_TOOLSET: '14.44'
       run: |
         echo "CCACHE_VERSION=${CCACHE_VERSION}" >> $GITHUB_ENV
@@ -67,7 +67,7 @@ runs:
     - if: runner.os == 'Linux'
       shell: bash
       env:
-        CLANG_VERSION: '19'
+        CLANG_VERSION: '23'
       run: |
         # set environment variables
         echo "INSTALL_PREFIX=/opt/smelibs" >> $GITHUB_ENV
@@ -78,19 +78,21 @@ runs:
         echo "CXX=clang++" >> $GITHUB_ENV
 
         # install ccache
-        wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}-linux-${CCACHE_ARCH}.tar.xz
-        tar -xf ccache-${CCACHE_VERSION}-linux-${CCACHE_ARCH}.tar.xz
-        sudo cp ccache-${CCACHE_VERSION}-linux-${CCACHE_ARCH}/ccache /usr/bin/ccache
-        rm -rf ccache-${CCACHE_VERSION}-linux-${CCACHE_ARCH}
-        rm -f ccache-${CCACHE_VERSION}-linux-${CCACHE_ARCH}.tar.xz
+        wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}-linux-${CCACHE_ARCH}-glibc.tar.xz
+        tar -xf ccache-${CCACHE_VERSION}-linux-${CCACHE_ARCH}-glibc.tar.xz
+        sudo cp ccache-${CCACHE_VERSION}-linux-${CCACHE_ARCH}-glibc/ccache /usr/bin/ccache
+        rm -rf ccache-${CCACHE_VERSION}-linux-${CCACHE_ARCH}-glibc
+        rm -f ccache-${CCACHE_VERSION}-linux-${CCACHE_ARCH}-glibc.tar.xz
 
         # add llvm repo for clang
-        sudo wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-        sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-${CLANG_VERSION} main"
+        sudo mkdir -p /etc/apt/keyrings
+        sudo wget -O /etc/apt/keyrings/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
+        UBUNTU_CODENAME=$(lsb_release -cs)
+        echo "deb [signed-by=/etc/apt/keyrings/apt.llvm.org.asc] https://apt.llvm.org/${UBUNTU_CODENAME}/ llvm-toolchain-${UBUNTU_CODENAME}-${CLANG_VERSION} main" | sudo tee /etc/apt/sources.list.d/llvm.list
         sudo apt update -yy
 
         # install clang, ninja, qt build deps, and any extra dependencies
-        sudo apt install -yy clang-${CLANG_VERSION} llvm-${CLANG_VERSION} lld-${CLANG_VERSION} libclang-rt-${CLANG_VERSION}-dev libclang-dev ninja-build xvfb jwm lcov libglu1-mesa-dev libx11-dev libx11-xcb-dev libxext-dev libxfixes-dev libxi-dev libxrender-dev libxcb1-dev libxcb-glx0-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-render-util0-dev libxkbcommon-dev libxkbcommon-x11-dev '^libxcb.*-dev' ${{ inputs.extra-deps }}
+        sudo apt install -yy clang-${CLANG_VERSION} llvm-${CLANG_VERSION} lld-${CLANG_VERSION} libclang-rt-${CLANG_VERSION}-dev libclang-${CLANG_VERSION}-dev ninja-build xvfb jwm lcov libglu1-mesa-dev libx11-dev libx11-xcb-dev libxext-dev libxfixes-dev libxi-dev libxrender-dev libxcb1-dev libxcb-glx0-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-render-util0-dev libxkbcommon-dev libxkbcommon-x11-dev '^libxcb.*-dev' ${{ inputs.extra-deps }}
 
         # install a recent version of cmake
         pip install cmake
@@ -120,7 +122,7 @@ runs:
     - if: (runner.os == 'macOS') && (runner.arch == 'ARM64')
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '16.1'
+        xcode-version: '26.6'
     - if: (runner.os == 'macOS') && (runner.arch != 'ARM64')
       shell: bash
       run: |
@@ -130,13 +132,14 @@ runs:
       shell: bash
       run: |
         # set ARM64 environment variables
-        echo "TARGET_TRIPLE=aarch64-apple-darwin20.1.0" >> $GITHUB_ENV
-        echo "HOST_TRIPLE=aarch64-apple-darwin20.1.0" >> $GITHUB_ENV
+        # darwin version in triples should match MACOSX_DEPLOYMENT_TARGET (darwin23.4 = macOS 14.4)
+        echo "TARGET_TRIPLE=aarch64-apple-darwin23.4.0" >> $GITHUB_ENV
+        echo "HOST_TRIPLE=aarch64-apple-darwin23.4.0" >> $GITHUB_ENV
         echo "OS=osx-arm64" >> $GITHUB_ENV
         echo "INSTALL_PREFIX=/opt/smelibs" >> $GITHUB_ENV
         echo "SUDO_CMD=sudo" >> $GITHUB_ENV
         echo "PYTHON_EXE=python" >> $GITHUB_ENV
-        echo "MACOSX_DEPLOYMENT_TARGET=13" >> $GITHUB_ENV
+        echo "MACOSX_DEPLOYMENT_TARGET=14.4" >> $GITHUB_ENV
 
         # install required tools and any extra dependencies
         LOCAL_BIN="${HOME}/.local/smebin"
@@ -197,7 +200,7 @@ runs:
         arch: arm64
         toolset: ${{ steps.global-env.outputs.msvc_toolset }}
     - if: runner.os == 'Windows'
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ steps.global-env.outputs.python_version }}
     - if: runner.os == 'Windows'
@@ -234,7 +237,7 @@ runs:
       name: Install Mesa 3D to get OpenGL support on Windows without a GPU
       uses: ssciwr/setup-mesa-dist-win@v3
       with:
-        version: "26.0.3"
+        version: "26.2.3"
     # SET CCACHE MAX SIZE
     - if: runner.os != 'Windows'
       shell: bash
@@ -254,7 +257,7 @@ runs:
         ccache --show-stats
     # PYTHON
     - if: runner.os != 'Windows'
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ steps.global-env.outputs.python_version }}
     # GET-LIBS
